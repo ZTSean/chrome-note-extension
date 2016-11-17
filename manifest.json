@@ -22,7 +22,7 @@
   ],
 
   "background": {
-    "scripts" : ["background.js"]
+    "scripts" : ["background.js", "js/fuse.min.js"]
   },
   
   "permissions": [

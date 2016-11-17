@@ -104,7 +104,7 @@ function Note()
     edit.addEventListener('keyup', function() { return self.onKeyUp() }, false); // save later if no continue input
     note.appendChild(edit);
     this.editField = edit;
-    console.log("e width: " + edit.style.height + " height: " + edit.style.width );
+    //console.log("e width: " + edit.style.height + " height: " + edit.style.width );
     editH = edit.style.height;
     editW = edit.style.width;
 
@@ -173,22 +173,6 @@ Note.prototype = {
         this.note.style.top = x;
     },
 
-    get width() {
-        return this.note.style.width;
-    },
-
-    set width(x) {
-        this.note.style.width = x;
-    },
-
-    get height() {
-        return this.note.style.height;
-    },
-
-    set height(x) {
-        this.note.style.height = x;
-    },
-
     get zIndex()
     {
         return this.note.style.zIndex;
@@ -221,14 +205,9 @@ Note.prototype = {
         var pdf = new jsPDF();
         var source = self.editField;
 
-        pdf.text(20, 20, "Note from" + "note_" + this._id);
+        pdf.text(20, 20, "Note from note_" + this._id);
         pdf.text(20, 30, source.innerHTML);
 
-        /*
-        pdf.fromHTML(source, 15, 15, {
-          'width': 170,
-        });
-        */
 
         pdf.save("note" + this._id + ".pdf");
     },
@@ -257,31 +236,26 @@ Note.prototype = {
         }
 
         var note = this;
-      chrome.extension.sendRequest({command:"save",
-                                    data:{id:note.id, 
-                                          text:note.text, 
-                                          timestamp:note.timestamp, 
-                                          left:note.left, 
-                                          top:note.top, 
-                                          width:note.width,
-                                          height:note.height,
-                                          zindex:note.zIndex, 
-                                          url:window.location.href}},
-                                    function(response){console.log(response.message+response.id);});
+        chrome.extension.sendRequest({command:"save",
+                                      data:{id:note.id, 
+                                            text:note.text, 
+                                            left:note.left, 
+                                            top:note.top, 
+                                            zindex:note.zIndex, 
+                                            url:window.location.href}},
+                                      function(response){console.log(response.message+response.id);});
 
     },
 
     saveAsNew: function()
-    {        
-        var note = this;
+    {
+      var note = this;
+      console.log(note.offsetHeight + ", width: " + note.offsetWidth);
       chrome.extension.sendRequest({command:"saveAsNew",
                                     data:{id:note.id, 
                                        text:note.text, 
-                                       timestamp:note.timestamp, 
                                        left:note.left, 
                                        top:note.top,
-                                       width:note.width,
-                                       height:note.height, 
                                        zindex:note.zIndex, 
                                        url:window.location.href}},
                                     function(response){console.log(response.message+response.id);});
@@ -395,8 +369,6 @@ function loadNotes(data)
          note.timestamp = row.timestamp;
          note.left = row.left;
          note.top = row.top;
-         note.width = row.width;
-         note.height = row.height;
          note.zIndex = row.zindex;
          if(note.zIndex == ''){
             note.zIndex = highestZ;

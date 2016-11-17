@@ -17,7 +17,7 @@ try {
 			 	console.log("Create database...");
 			 	// Create table if not exist: 
 				tx.executeSql('CREATE TABLE IF NOT EXISTS ' + notestable +  
-					'(id REAL UNIQUE, note TEXT, left TEXT, top TEXT, width TEXT, height TEXT, zindex REAL, url TEXT)', 
+					'(id REAL UNIQUE, note TEXT, left TEXT, top TEXT, zindex REAL, url TEXT)', 
 				  []);
 			  });
 		}
@@ -136,10 +136,8 @@ var loadCSS = function(){
 
 var execute = function(code) {
     chrome.tabs.getSelected(null, function(tab) {
-		if(!skipUrl(tab.url)){
+		if(!skipUrl(tab.url))
 			chrome.tabs.executeScript(tab.id, {code: code});
-		}
-			
     });
 };
 
@@ -148,13 +146,14 @@ chrome.extension.onRequest.addListener(
 		if(request.command == 'save'){
 			note = request.data;
 			db.transaction(function (tx){
-				tx.executeSql("UPDATE " + notestable + " SET note = ?, left = ?, top = ?, width = ?, height = ?, zindex = ?, url = ? WHERE id = ?", [note.text, note.left, note.top, note.width, note.height, note.zindex, note.url, note.id]);
+				tx.executeSql("UPDATE " + notestable + " SET note = ?, left = ?, top = ?, zindex = ?, url = ? WHERE id = ?", [note.text, note.left, note.top, note.zindex, note.url, note.id]);
 			});
 			sendResponse({message:"Saved",id:request.data.id});
 		}else if(request.command == 'saveAsNew'){
+			console.log("save as new database query called.");
 			note = request.data;
 			db.transaction(function (tx) {
-				tx.executeSql("INSERT INTO " + notestable + " (id, note, left, top, zindex, url) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)", [note.id, note.text, note.left, note.top, note.width, note.height, note.zindex, note.url]);
+				tx.executeSql("INSERT INTO " + notestable + " (id, note, left, top, zindex, url) VALUES (?, ?, ?, ?, ?, ?)", [note.id, note.text, note.left, note.top, note.zindex, note.url]);
 			});
 			sendResponse({message:"SavedNew",id:request.data.id});
 		}else if(request.command == 'close'){
@@ -168,22 +167,21 @@ chrome.extension.onRequest.addListener(
 			});
 		}else if (request.command == "Create") {
 			chrome.tabs.getSelected(null, function(tab) {
-    			//console.log(tab.url);
-        		if(!skipUrl(tab.url,true))
-				{
-					//alert("create new note!");
-					newNote();
-				}
-	    	});
-		} else if (request.command == "InsertDownloadJS") {
-			execute("document.head.appendChild(document.createElement('script')).src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js'");
-		}// delete summary function
+    		console.log(tab.url);
+        	if(!skipUrl(tab.url,true))
+			{
+				//alert("create new note!");
+				newNote();
+			}
+	    });
+				
+		} // delete summary function
 	}
 );
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-  	//alert("runtime message listener.");
+  	//console.log("runtime message listener.");
     if (request.command == "Create")
     {
     	chrome.tabs.getSelected(null, function(tab) {
@@ -194,6 +192,88 @@ chrome.runtime.onMessage.addListener(
 				newNote();
 			}
 	    });
-	};
-});
+	} else if (request.command == "LoadNotes") {
+		console.log("loadNotes request from popup");
+		db.transaction(function(tx) {
+			//console.log("execute executeSql");
+			tx.executeSql("SELECT * FROM " + notestable, [], function(tx, result) {
+				var data =[];
+				for (var i = 0; i < result.rows.length; ++i){
+					data[i] = result.rows.item(i);
+				}
 
+				var s = JSON.stringify(data);
+				//console.log(s);
+				chrome.runtime.sendMessage({
+					command:"PopupShowNotes",
+					notesdata:s
+				});
+			}, function(tx, error) {
+				console.log("load notes error...");
+				alert('Failed to retrieve notes from database - ' + error.message);
+				return;
+			});
+		});
+	}
+	// ================= Search function listener ===================
+	else if (request.command == "Search") {
+		console.log("Search request from popup.");
+		if (request.key == "") {
+			// If search key word is empty, return all search result
+			db.transaction(function(tx) {
+				//console.log("execute executeSql");
+				tx.executeSql("SELECT * FROM " + notestable, [], function(tx, result) {
+					var data =[];
+					for (var i = 0; i < result.rows.length; ++i){
+						data[i] = result.rows.item(i);
+					}
+
+					var s = JSON.stringify(data);
+					//console.log(s);
+					chrome.runtime.sendMessage({
+						command:"SearchResult",
+						notesdata:s
+					});
+				}, function(tx, error) {
+					console.log("load notes error...");
+					alert('Failed to retrieve notes from database - ' + error.message);
+					return;
+				});
+			});
+		} else {
+			// List of properties that will be searched. This also supports nested properties:
+			// !!!!!!! TODO: local user customziation
+			var keyOptions = ["note"];
+			console.log("key not empty");
+
+			// Database query
+			db.transaction(function(tx) {
+				//console.log("execute executeSql");
+				tx.executeSql("SELECT * FROM " + notestable, [], function(tx, result) {
+					var data =[];
+					for (var i = 0; i < result.rows.length; ++i){
+						data[i] = result.rows.item(i);
+					}
+
+					var fuse = new Fuse(data, { threshold: 0.2, keys: keyOptions });
+
+					var result = fuse.search(request.key);
+
+					
+					// Send Message Preparation
+					chrome.runtime.sendMessage({
+						command:"SearchResult",
+						notesdata:JSON.stringify(result)
+					});
+
+
+
+				}, function(tx, error) {
+					console.log("load notes error...");
+					alert('Failed to retrieve notes from database - ' + error.message);
+					return;
+				});
+			});
+		} 
+	}
+});
