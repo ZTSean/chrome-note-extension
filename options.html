@@ -8,8 +8,11 @@
 		<!-- Latest compiled JavaScript -->
 		<script src="js/bootstrap.js"></script>
 
+		<script type="text/javascript" src="js/jscolor.min.js"></script>
+
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="css/bootstrap.css">
+		<link rel="stylesheet" href="css/options.css">
 		<link href="css/navbar-fixed-side.css" rel="stylesheet" />
 	</head>
 	<body>
@@ -25,28 +28,252 @@
 				        <span class="icon-bar"></span>
 				        <span class="icon-bar"></span> 
 				      </button>
-				      <a class="navbar-brand" href="#">Extension Name</a>
+				      <a class="navbar-brand" href="#">Settings</a>
 				    </div>
 				    <div class="collapse navbar-collapse" id="myNavbar">
 				      <ul class="nav navbar-nav">
-				        <li class="active"><a href="#">Home</a></li>
-				        <li><a href="#">Notes</a></li>
-				        <li><a href="#">Gesture Control</a></li> 
-				        <li><a href="#">Settings</a></li> 
+				        <li><a href="#" id="home_page_button">Home</a></li>
+				        <li><a href="#" id="note_page_button">Notes</a></li>
+				        <li><a href="#" id="drawing_page_button">Drawing</a></li>
+				        <li><a href="#" id="search_page_button">Search</a></li>
+				        <li><a href="#" id="gc_page_button">Gesture Control</a></li> 
 				      </ul>
 				    </div>
 		      </nav>
 		    </div>
 		    <div class="col-sm-9 col-lg-10">
-		      <!-- your page content -->
-		      <ul class="nav nav-tabs">
-				  <li role="presentation" class="active"><a href="#">Home</a></li>
-				  <li role="presentation"><a href="#">Profile</a></li>
-				  <li role="presentation"><a href="#">Messages</a></li>
+		      	<!-- your page content -->
+		      	<!--
+		      	<ul class="nav nav-tabs">
+				  	<li role="presentation" class="active"><a href="#">Home</a></li>
+				  	<li role="presentation"><a href="#">Profile</a></li>
+				  	<li role="presentation"><a href="#">Messages</a></li>
 				</ul>
+				-->
+
+				<div id="home_page" class="show"> 
+					<div class="page-header">
+					  <h3>Home</h3>
+					</div>
+
+
+				</div>
+
+				<div id="note_page" class="hidden">
+					<div class="page-header">
+					  <h3>Notes Settings</h3>
+					</div>
+
+					<div class="form-group">
+			            <label>Note Background Color : </label>
+			            <input class="form-control jscolor {value: 'FFF046'}" id="bg_color" type="text" spellcheck="false">
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Note Text Color : </label>
+			            <input class="form-control jscolor {value: '000066'}" id="t_color" type="text" spellcheck="false">
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Tool Bar Color : </label>
+			            <input class="form-control jscolor {value: 'DDBB00'}" id="bb_color" type="text" spellcheck="false">
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Tool Bar Icon Color : </label>
+			            <input class="form-control jscolor {value: '666666'}" id="bi_color" type="text" spellcheck="false">
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Font : </label>
+			            <select id="font" class="form-control"></select>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Font Size (px): </label>
+			            <input type="number" class="form-control" id="font_size" min="8" max="48" value="14">
+			            <span id="helpBlock" class="help-block">Max Font Size: 48px<br />Min Font Size: 8px</span>
+			        </div>
+			        <hr />
+
+
+					<div class="page_button">
+			          	<button id="note_options_save_button" type="button" class="btn btn-primary">Save</button>
+			          	<button id="note_options_reset_button" type="button" class="btn btn-danger">Reset</button>
+			        </div>
+				</div>
+
+
+				<div id="search_page" class="hidden">
+					<div class="page-header">
+					  <h3>Search Settings</h3>
+					</div>
+					<div class="form-group">
+			            <div class="checkbox">
+			              <label>
+			                <input id="caseSensitive" type="checkbox"> Case sensitive (Default: no)
+			              </label>
+			              <span id="helpBlock" class="help-block">Indicates whether comparisons should be case sensitive.</span>
+			            </div>
+			          </div>
+			          <hr />
+
+			          <div class="form-group">
+			            <div class="checkbox">
+			              <label>
+			                <input type="checkbox" id="shouldSort" checked="checked">Sort (Default: yes)
+			              </label>
+			              <span id="helpBlock" class="help-block">Whether to sort the result list, by score.</span>
+			            </div>
+			          </div>
+			          <hr />
+
+			          <div class="form-group">
+			            <label>Keys</label>
+			            <br>
+		            	<textarea class="form-control" id="keys" style="min-width: 100%; min-height: 20px">["note"]</textarea>
+				        
+			           	<span class="help-block">Options: id, notes</span>
+			            <span id="helpBlock" class="help-block">List of properties that will be searched. This supports nested properties, weighted search, searching in arrays</span>
+			          </div>
+			          <hr />
+
+			          <div class="form-group form-inline">
+			            <label for="locationRange">Location (Default: 0)</label>
+			            <input type="number" id="location" min="0" max="100" value="0">
+			            <span id="helpBlock" class="help-block">Determines approximately where in the text is the pattern expected to be found.</span>
+			          </div>
+			          <hr />
+
+			          <div class="form-group form-inline">
+			            <label for="thresholdRange">Threshold (Default: 0.2)</label>
+			            <input type="number" id="threshold" min="0" step="0.1" max="1" value="0.2">
+			            <span id="helpBlock" class="help-block">At what point does the match algorithm give up. A threshold of <code>0.0</code> requires a perfect match (of both letters and location), a threshold of <code>1.0</code> would match anything.</span>
+			          </div>
+			          <hr />
+
+			          <div class="form-group form-inline">
+			            <label for="distanceRange">Distance (Default: 100)</label>
+			            <input type="number" id="distance" min="0" max="1000" value="100">
+			            <span id="helpBlock" class="help-block">Determines how close the match must be to the fuzzy location (specified by <code>location</code>). An exact letter match which is <code>distance</code> characters away from the fuzzy location would score as a complete mismatch. A <code>distance</code> of <code>0</code> requires the match be at the exact <code>location</code> specified, a <code>distance</code> of <code>1000</code> would require a perfect match to be within <code>800</code> characters of the <code>location</code> to be found using a <code>threshold</code> of <code>0.8</code>.</span>
+			          </div>
+			          <hr />
+
+			          <div class="form-group form-inline">
+			            <label for="maxPatternLength">Max pattern length (default: 32)</label>
+			            <input type="number" id="maxPatternLength" min="0" max="64" value="32">
+			            <span id="helpBlock" class="help-block">The maximum length of the pattern. The longer the pattern (i.e. the search query), the more intensive the search operation will be. Whenever the pattern exceeds the <code>maxPatternLength</code>, an error will be thrown. Why is this important? Read <a href="https://en.wikipedia.org/wiki/Word_(computer_architecture)#Word_size_choice" alt="word size choice" target="_blank">this</a>.</span>
+			          </div>
+			          <hr />
+
+			          <div class="page_button">
+			          	<button id="search_options_save_button" type="button" class="btn btn-primary">Save</button>
+			          	<button id="search_options_reset_button" type="button" class="btn btn-danger">Reset</button>
+			          </div>
+			          
+
+				</div>
+
+				<div id="drawing_page" class="hidden">
+					<div class="page-header">
+					  <h3>Drawing Settings</h3>
+					</div>
+
+					<div class="page_button">
+			          	<button type="button" class="btn btn-primary">Save</button>
+			          	<button type="button" class="btn btn-danger">Reset</button>
+			          </div>
+				</div>
+
+				<div id="gesture_control_page" class="hidden">
+					<div class="page-header">
+					  <h3>Gesture Control Settings</h3>
+					</div>
+
+					<div class="form-group">
+			            <label>Mouse Left : </label>
+			            <select id="gc_LEFT" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Right : </label>
+			            <select id="gc_RIGHT" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Up : </label>
+			            <select id="gc_UP" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Down : </label>
+			            <select id="gc_DOWN" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Left Arrow : </label>
+			            <select id="gc_LEFTARROW" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Right Arrow : </label>
+			            <select id="gc_RIGHTARROW" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />			        
+
+			        <div class="form-group">
+			            <label>Mouse Up Arrow : </label>
+			            <select id="gc_UPARROW" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Down Arrow : </label>
+			            <select id="gc_DOWNARROW" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Circle Arrow : </label>
+			            <select id="gc_CIRCLE" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+			        <div class="form-group">
+			            <label>Mouse Triangle Arrow : </label>
+			            <select id="gc_TRIANGLE" class="form-control"></select>
+			            <span id="helpBlock" class="help-block">Helper Information Here.</span>
+			        </div>
+			        <hr />
+
+					<div class="page_button">
+			          	<button id="gesture_options_save_button" type="button" class="btn btn-primary">Save</button>
+			          	<button id="gesture_options_reset_button" type="button" class="btn btn-danger">Reset</button>
+			          </div>
+				</div>
 		    </div>
 		  </div>
 		</div>
+
 
 		<script src="js/options.js"></script>
 	</body>

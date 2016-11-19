@@ -2,6 +2,7 @@ var db; // database
 var notes; // count of notes
 var highestId = 0;
 //var skipUrls = ['chrome://extensions/','chrome://newtab/','chrome://devtools/devtools.html'];
+var searchSettings = { threshold: 0.2, keys: ["note"] };
 
 // data base table name
 var notestable = "WebNotes";
@@ -61,6 +62,7 @@ chrome.browserAction.setBadgeText({text:""});
 // NOT WORK NOW!!!! Does not activate when the there is a popup page
 chrome.browserAction.onClicked.addListener(function(tab) {
 	if(!skipUrl(tab.url,true))
+		apply
 		newNote();
 });
 
@@ -126,13 +128,57 @@ var loadNotes = function(){
 	});
 }
 
-
+// ===================== Load settings helper functions ====================
+// load notes settings
 var loadCSS = function(){
+	// execute note.js loadCSS function
 	code = 'loadCSS('+JSON.stringify(localStorage)+')';
 	chrome.tabs.getSelected(null, function(tab) {
 		chrome.tabs.executeScript(tab.id, {code: code});
 	});
 }
+
+// load search settings
+var loadSearchSettings = function(){
+	// apply search settings from localStorage
+	if (localStorage != undefined) {
+		if (localStorage['caseSensitive'] != undefined) 
+			searchSettings['caseSensitive'] = eval(localStorage['caseSensitive']);
+		if (localStorage['shouldSort'] != undefined) 
+			searchSettings['shouldSort'] = eval(localStorage['shouldSort']);
+		if (localStorage['keys'] != undefined) 
+			searchSettings['keys'] = eval(localStorage['keys']);
+		if (localStorage['location'] != undefined) 
+			searchSettings['location'] = eval(localStorage['location']);
+		if (localStorage['threshold'] != undefined) 
+			searchSettings['threshold'] = eval(localStorage['threshold']);
+		if (localStorage['distance'] != undefined) 
+			searchSettings['distance'] = eval(localStorage['distance']);
+		if (localStorage['maxPatternLength'] != undefined) 
+			searchSettings['maxPatternLength'] = eval(localStorage['maxPatternLength']);
+	}
+	
+}
+
+// load drawing settings
+var loadDrawingSettings = function(){
+	// execute note.js loadDrawingSettings function
+	code = 'loadDrawingSettings('+JSON.stringify(localStorage)+')';
+	chrome.tabs.getSelected(null, function(tab) {
+		chrome.tabs.executeScript(tab.id, {code: code});
+	});
+}
+
+// load gesture control settings
+var loadGestureSettings = function(){
+	// execute note.js loadGestureSettings function
+	code = 'loadGestureSettings('+JSON.stringify(localStorage)+')';
+	chrome.tabs.getSelected(null, function(tab) {
+		chrome.tabs.executeScript(tab.id, {code: code});
+	});
+}
+
+// =========================================================================
 
 var execute = function(code) {
     chrome.tabs.getSelected(null, function(tab) {
@@ -167,15 +213,102 @@ chrome.extension.onRequest.addListener(
 			});
 		}else if (request.command == "Create") {
 			chrome.tabs.getSelected(null, function(tab) {
-    		console.log(tab.url);
-        	if(!skipUrl(tab.url,true))
-			{
-				//alert("create new note!");
-				newNote();
-			}
-	    });
+	    		console.log(tab.url);
+	        	if(!skipUrl(tab.url,true))
+				{
+					//alert("create new note!");
+					newNote();
+				}
+		    });
 				
-		} // delete summary function
+		}
+
+		// =================== Jingyuan Hu's implementation ==================
+		else if(request.msg == "open_new_tab"){
+            chrome.tabs.create({
+                url: 'chrome://newtab/',
+                selected: true
+            });
+        }
+        else if(request.msg == "close_tab"){
+            // chrome.tabs.getSelected(null, 
+            //     function(tab){
+            //         if (!tab.pinned) {
+            //             chrome.tabs.remove(tab.id);
+            //         }
+            //     });
+        }
+        else if(request.msg == "next_tab"){
+            //  chrome.tabs.getSelected(null, 
+            //     function(tab) {
+            //         chrome.tabs.getAllInWindow(null, 
+            //             function(tabs) {
+            //                  for(i in tabs){
+            //                     if (tabs[i].id == tab.id) {
+            //                         var newtab = tabs[i+1] || tabs[0];
+            //                         if (newtab) {
+            //                             chrome.tabs.update(newtab.id, {selected: true});
+            //                         }
+            //                     }
+            //                 }
+            //         });
+            // });
+            chrome.tabs.getSelected(null, 
+                function(tab) {
+                    chrome.tabs.getAllInWindow(null, 
+                        function(tabs) {
+                            for(var i = 0; i < tabs.length; i++){
+                                 if (tabs[i].id == tab.id) {
+                                    var newtab = tabs[i+1] || tabs[0];
+                                    if (newtab) {
+                                        chrome.tabs.update(newtab.id, {selected: true});
+                                    }
+                                }
+                            }
+                        });
+                });
+        }
+        else if(request.msg == "prev_tab"){
+            chrome.tabs.getSelected(null, 
+                function(tab) {
+                    chrome.tabs.getAllInWindow(null, 
+                        function(tabs) {
+                             for(var i in tabs){
+                                if (tabs[i].id == tab.id) {
+                                    var newtab = tabs[i-1] || tabs[tabs.length-1];
+                                    if (newtab) {
+                                        chrome.tabs.update(newtab.id, {selected: true});
+                                    }
+                                }
+                            }
+                    });
+            });
+        }
+        else if(request.msg == "open_new_window"){
+            chrome.tabs.getSelected(null, 
+                function(tab) {
+                    chrome.windows.create({url: 'chrome://newtab/'});
+                });
+        }
+        else if(request.msg == "close_window"){
+            chrome.tabs.getSelected(null, 
+                function(tab) {
+                    chrome.windows.remove(tab.windowId);
+                });
+        }
+        else if(request.msg == "pin_tab"){
+            chrome.tabs.getSelected(null, 
+                function(tab) {
+                    chrome.tabs.update({pinned: true});
+                });
+        }
+        else if(request.msg == "add_bookmark"){
+            chrome.tabs.getSelected(null, 
+                function(tab) {
+                    chrome.bookmarks.create({title: tab.title, url: tab.url});
+                });
+        }
+        // ===============================================================
 	}
 );
 
@@ -242,9 +375,7 @@ chrome.runtime.onMessage.addListener(
 			});
 		} else {
 			// List of properties that will be searched. This also supports nested properties:
-			// !!!!!!! TODO: local user customziation
-			var keyOptions = ["note"];
-			console.log("key not empty");
+			console.log(searchSettings);
 
 			// Database query
 			db.transaction(function(tx) {
@@ -255,7 +386,8 @@ chrome.runtime.onMessage.addListener(
 						data[i] = result.rows.item(i);
 					}
 
-					var fuse = new Fuse(data, { threshold: 0.2, keys: keyOptions });
+					console.log(searchSettings);
+					var fuse = new Fuse(data, searchSettings);
 
 					var result = fuse.search(request.key);
 
@@ -275,5 +407,12 @@ chrome.runtime.onMessage.addListener(
 				});
 			});
 		} 
+	} 
+
+	// ================= Settings apply listener ===================
+	else if (request.command == "ApplySearchSettings") {
+		console.log("Start apply settings:");
+		loadSearchSettings();
+		console.log(searchSettings);
 	}
 });

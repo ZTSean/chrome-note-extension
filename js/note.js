@@ -411,27 +411,75 @@ function applyCSS(localstorage){
       cssNode.rel = 'stylesheet';
       headID.appendChild(cssNode);
    }
-   css = '.note-box ' + newline;
+   css = '';
    
+
    // update settings according to user preference
-   // TODO: make settings pages
    if(localstorage != undefined){
       if(localstorage['bg_color'] != undefined) // background color
-         css += '.note-box {background-color: #'+localstorage['bg_color']+';}'+ newline;
-      if(localstorage['t_color'] != undefined) // 
-         css += '.note-box {color: #'+localstorage['t_color']+';}'+ newline;
+        css += '.note-box {background-color: #'+localstorage['bg_color']+';}'+ newline;
+      if(localstorage['t_color'] != undefined) // text color
+        css += '.note-box {color: #'+localstorage['t_color']+';}'+ newline;
       if(localstorage['font'] != undefined) // font style
-         css += '.note-box  .edit {font-family: '+localstorage['font']+';}' +newline;
+        css += '.note-box  .edit {font-family: '+localstorage['font']+';}' +newline;
       if(localstorage['font_size'] != undefined) // font size
-         css += '.note-box  .edit {font-size: '+localstorage['font_size']+';}' +  newline;
+        css += '.note-box  .edit {font-size: '+localstorage['font_size']+'px;}' +  newline;
+      if (localstorage['bi_color'] != undefined) // tool bar icon color
+        css += '.note-toolbar a {color: #' + localstorage['bi_color'] + ';}' + newline;
+      if(localstorage['bb_color'] != undefined) // toolbar background color
+        css += '.note-toolbar {color: #' + localstorage['bb_color'] + ';}' + newline;
    }
+   console.log(css);
    document.getElementById('noteboxcss').href = 'data:text/css,'+escape(css);
-   
+
+   /*
+   console.log(localstorage['bg_color']);
+   console.log(localstorage['t_color']);
+   console.log(localstorage['font']);
+   console.log(localstorage['font_size']);
+   console.log(localstorage['bb_color']);
+   console.log(localstorage['bi_color']);
+   */
 }
 
+function applySearchSettings(localstorage) {
+
+}
+
+function applySearchSettings(localstorage) {
+
+}
+
+function applyGestureSettings(localstorage) {
+
+}
+
+
+// ===================== Load settings helper functions ====================
+// load note settings
 function loadCSS(json){
    localstorage = eval(json);
    applyCSS(localstorage);
 }
+
+// load search settings
+function loadSearchSettings(json){
+   localstorage = eval(json);
+   applySearchSettings(localstorage);
+}
+
+// load drawing settings
+function loadDrawingSettings(json){
+   localstorage = eval(json);
+   applySearchSettings(localstorage);
+}
+
+// load gesture control settings
+function loadGestureSettings(json){
+   localstorage = eval(json);
+   applyGestureSettings(localstorage);
+}
+
+// =========================================================================
 
 applyCSS();
