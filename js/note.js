@@ -429,7 +429,7 @@ function applyCSS(localstorage){
       if(localstorage['bb_color'] != undefined) // toolbar background color
         css += '.note-toolbar {color: #' + localstorage['bb_color'] + ';}' + newline;
    }
-   console.log(css);
+   //console.log(css);
    document.getElementById('noteboxcss').href = 'data:text/css,'+escape(css);
 
    /*
@@ -441,19 +441,6 @@ function applyCSS(localstorage){
    console.log(localstorage['bi_color']);
    */
 }
-
-function applySearchSettings(localstorage) {
-
-}
-
-function applySearchSettings(localstorage) {
-
-}
-
-function applyGestureSettings(localstorage) {
-
-}
-
 
 // ===================== Load settings helper functions ====================
 // load note settings
@@ -481,5 +468,41 @@ function loadGestureSettings(json){
 }
 
 // =========================================================================
-
+// apply css from local storage
 applyCSS();
+
+// =========================================================================
+// drawing function controlled by mode
+var Line = function(x1,y1,x2,y2){
+      this.x1= x1;
+      this.y1= y1;
+      this.x2= x2;
+      this.y2= y2;
+};
+
+
+// list array store example, store according to current url
+var strokeListList = [];
+strokeListList.push(new Line(15, 15, 15, 15));
+//var storage = chrome.storage.local();
+// storage.set(url, stroke points)
+//chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+    //var url = tabs[0].url;
+    var url = document.URL;
+    var strokes = JSON.stringify(strokeListList);
+    var stroke = {url };
+    stroke[url] = strokes;
+    console.log(stroke);
+    chrome.storage.local.set(stroke, function () {
+      console.log('saved strokes');
+    });                      
+//});
+
+//chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+//    var url = tabs[0].url;
+  chrome.storage.local.get(null, function (result) {
+    console.log(result);
+  });
+//});
+
+
