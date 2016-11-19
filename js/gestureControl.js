@@ -254,8 +254,21 @@ var TRIANGLE = new RegExp(START+SOUTH_WESTISH+EASTISH+NORTH_WESTISH+END);
 var STAR = new RegExp(START+EASTISH+SOUTH_WESTISH+NORTH_EASTISH+SOUTH_EASTISH+NORTH_WESTISH+END)
 var QMARK = new RegExp(START+NORTHISH+EASTISH+SOUTHISH+SOUTH_WESTISH+SOUTHISH+END)
 
+//hast table for gesture control
+var gestControlHT = {};
+gestControlHT["RIGHT"] = "open_new_window";
+gestControlHT["LEFT"] = "close_window";
+gestControlHT["UP"] = "pin_tab";
+gestControlHT["DOWN"] = "close_tab";
+gestControlHT["RIGHTARROW"] = "next_tab";
+gestControlHT["LEFTARROW"] = "prev_tab";
+gestControlHT["UPARROW"] = "scroll_top";
+gestControlHT["DOWNARROW"] = "scroll_bottom";
+gestControlHT["CIRCLE"] = "reload_page";
+gestControlHT["TRIANGLE"] = "add_bookmark";
+
+
 // ================ Zixiao Wang Implementation for option settings ===============
-// gesture control options
 var gcOptions = [
     'LEFT',
     'RIGHT',
@@ -269,8 +282,7 @@ var gcOptions = [
     'TRIANGLE'
 ];
 
-// * gesture control default settings (has the same order as gcOptions)
-var gs_defaults = [
+var gc_defaults = [
     'close_window',
     'open_new_window',
     'pin_tab',
@@ -283,59 +295,29 @@ var gs_defaults = [
     'add_bookmark'
 ];
 
-var gesture_options = {
-    'Close window': 'close_window',
-    'Open new window': 'open_new_window',
-    'Pin tab': 'pin_tab',
-    'Close current tab': 'close_tab',
-    'Back to previous tab': 'prev_tab',
-    'Go to next tab': 'next_tab',
-    'Scroll up to the page top': 'scroll_top',
-    'Scroll down to the page bottom': 'scroll_bottom',
-    'Reload current page': 'reload_page',
-    'Add bookmark to current page': 'add_bookmark'
-}
-
-function save_gc_options () {
-    for (i = 0; i < gcOptions.length; i++) {
-        localStorage[gcOptions[i]] = $('#gc_' + gcOptions[i]).val();
+// load settings from options page
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.command == 'ApplyGestureSettings') {
+        for (var i = 0; i < gcOptions.length; i++) {
+            if (localStorage[gcOptions[i]] != undefined) {
+                // load settings from local storage
+                gestureControl[gcOptions[i]] = localStorage[gcOptions[i]];
+            }
+        }
+        console.log("gesture control settins loaded.");
+    } else if (request.command == 'ResetGestureSettings') {
+        for (var i = 0; i < gcOptions.length; i++) {
+            if (localStorage[gcOptions[i]] != undefined) {
+                // load settings from local storage
+                gestureControl[gcOptions[i]] = gc_defaults[i];
+            }
+        }
+        console.log("gesture control settins reset.");
     }
-}
-
-function reset_gc_options () {
-    
-}
-
-function initControlSettingPage() {
-    // Add options to each select element
-    var inputArray = $('#gesture_control_page select');
-    $.each(inputArray, function(index, input) {
-        $.each(gesture_options,function(actionName,actions){
-                opt = $('<option>');
-                opt.attr('value',actions);
-                opt.text(actionName)
-                input.append(opt);
-            });    
-    });
-    
-}
-
-initControlSettingPage();
-
+  }
+);
 // ======================================================================
-
-//hast table for gesture control
-var gestControlHT = {};
-gestControlHT["RIGHT"] = "open_new_window";
-gestControlHT["LEFT"] = "close_window";
-gestControlHT["UP"] = "pin_tab";
-gestControlHT["DOWN"] = "close_tab";
-gestControlHT["RIGHTARROW"] = "next_tab";
-gestControlHT["LEFTARROW"] = "prev_tab";
-gestControlHT["UPARROW"] = "scroll_top";
-gestControlHT["DOWNARROW"] = "scroll_bottom";
-gestControlHT["CIRCLE"] = "reload_page";
-gestControlHT["TRIANGLE"] = "add_bookmark";
 
 var Controls = {
     "forward": function(){

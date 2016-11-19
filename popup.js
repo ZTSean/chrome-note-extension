@@ -1,4 +1,5 @@
 var notes = [];
+var pages = ['homepage', 'mode_switch_page', 'accordion'];
 
 // Create Button -----------------------------
 document.getElementById("create").addEventListener("click", function () {
@@ -10,15 +11,62 @@ document.getElementById("create").addEventListener("click", function () {
 document.getElementById("get_notes").addEventListener("click", function () {
 	chrome.runtime.sendMessage ({command: "LoadNotes"});
 	console.log("get notes clicked.");
+
+	$('#accordion').addClass('show');
+	$('#accordion').removeClass('hidden');
+	for (var i = 0; i < pages.length; i++) {
+		if (pages[i] != 'accordion') {
+			$('#'+pages[i]).addClass('hidden');
+			$('#'+pages[i]).removeClass('show');
+		}
+	}
+});
+
+// Switch mode button --------------------------
+document.getElementById("switch_mode").addEventListener("click", function () {
+	console.log("switch mode clicked.");
+
+	$('#mode_switch_page').addClass('show');
+	$('#mode_switch_page').removeClass('hidden');
+	for (var i = 0; i < pages.length; i++) {
+		if (pages[i] != 'mode_switch_page') {
+			$('#'+pages[i]).addClass('hidden');
+			$('#'+pages[i]).removeClass('show');
+		}
+	}
 });
 
 // Get notes button --------------------------
 document.getElementById("search").addEventListener("click", function () {
 	var keyword = document.getElementById("keyword").value;
+	$('#accordion').addClass('show');
+	$('#accordion').removeClass('hidden');
+	for (var i = 0; i < pages.length; i++) {
+		if (pages[i] != 'accordion') {
+			$('#'+pages[i]).addClass('hidden');
+			$('#'+pages[i]).removeClass('show');
+		}
+	}
+
 	console.log(keyword + " search submitted.");
 	chrome.runtime.sendMessage ( {command: "Search", key:keyword } );
 	
 }); 	
+
+// Mode switch button ------------------------
+document.getElementById("gesturemodebutton").addEventListener("click", function () {
+	// get true or false value of radio button
+	var isSelected = $(this).prop('checked');
+	
+	// TODO: background 
+});
+
+document.getElementById("drawingmodebutton").addEventListener("click", function () {
+	// get true or false value of radio button
+	var isSelected = $(this).prop('checked');
+	
+	// TODO: background 
+});  	
 
 // ====== Message receiver ======
 chrome.runtime.onMessage.addListener(

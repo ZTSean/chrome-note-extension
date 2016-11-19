@@ -24,21 +24,13 @@
 			</li>
 			<li class="dropdown">
 				<a href="#" class="dropdown-toggle" data-toggle="dropdown">Notes <b class="caret"></b></a>
+				<div class="dropdown-divider"></div>
 				<ul class="dropdown-menu">
 					<li>
-						<a id="get_notes" href="#">Notes</a>
+						<a href="#" id="get_notes">Notes</a>
 					</li>
 					<li>
-						<a href="#">Another action</a>
-					</li>
-					<li>
-						<a href="#">Something else here</a>
-					</li>
-					<li>
-						<a href="#">Separated link</a>
-					</li>
-					<li>
-						<a href="#">One more separated link</a>
+						<a href="#" id="switch_mode">Mode</a>
 					</li>
 				</ul>
 			</li>
@@ -52,13 +44,26 @@
 		</ul>
 	  </div>
 	</nav>
-	<div>
+
+	<div id="homepage">
 		<div class="alert alert-success" role="alert">
 		  <strong>Welcome!</strong> to Note pop.
 		</div>
 	</div>
 
-	<div class="panel-group" id="accordion">
+	<div id="mode_switch_page" class="panel panel-default hidden">
+		<div class="panel-heading">Mode</div>
+		<div class="panel-body">
+			<div class="radio">
+			  <label><input id="gesturemodebutton" type="radio" name="optradio" checked="checked">Gesture Mode</label>
+			</div>
+			<div class="radio">
+			  <label><input id="drawingmodebutton" type="radio" name="optradio">Drawing Mode</label>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel-group hidden" id="accordion">
 	</div>
 	
 

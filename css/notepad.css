@@ -32,3 +32,11 @@ section { padding: 5px;}
   border-bottom-left-radius: 0px;
   border-left: 0px;
 }
+
+.hidden {
+	display: none;
+}
+
+.show {
+	display: block;
+}
