@@ -223,8 +223,14 @@ chrome.extension.onRequest.addListener(
 				
 		}
 
+		
+	}
+);
+
+chrome.extension.onMessage.addListener(
+	function(request,sender,sendResponse) {
 		// =================== Jingyuan Hu's implementation ==================
-		else if(request.msg == "open_new_tab"){
+		if(request.msg == "open_new_tab"){
             chrome.tabs.create({
                 url: 'chrome://newtab/',
                 selected: true
@@ -269,6 +275,7 @@ chrome.extension.onRequest.addListener(
                 });
         }
         else if(request.msg == "prev_tab"){
+        	console.log("prevprev tab");
             chrome.tabs.getSelected(null, 
                 function(tab) {
                     chrome.tabs.getAllInWindow(null, 

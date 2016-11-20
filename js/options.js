@@ -233,8 +233,7 @@ var gc_defaults = [
     'next_tab',
     'scroll_top',
     'scroll_bottom',
-    'reload_page',
-    'add_bookmark'
+    'reload_page'
 ];
 
 var gesture_options = {
@@ -247,7 +246,6 @@ var gesture_options = {
     'Scroll up to the page top': 'scroll_top',
     'Scroll down to the page bottom': 'scroll_bottom',
     'Reload current page': 'reload_page',
-    'Add bookmark to current page': 'add_bookmark'
 }
 
 function save_gc_options () {

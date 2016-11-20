@@ -292,7 +292,6 @@ var gc_defaults = [
     'scroll_top',
     'scroll_bottom',
     'reload_page',
-    'add_bookmark'
 ];
 
 // load settings from options page
