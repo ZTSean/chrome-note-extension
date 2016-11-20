@@ -51,7 +51,16 @@ document.getElementById("search").addEventListener("click", function () {
 	console.log(keyword + " search submitted.");
 	chrome.runtime.sendMessage ( {command: "Search", key:keyword } );
 	
-}); 	
+});
+
+// Print all notes of current tab button -------	
+document.getElementById("downloadallbyurl").addEventListener("click", function () {
+	chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+	    var URL = tabs[0].url;
+	    chrome.runtime.sendMessage ( {command: "DownloadAllByUrl", url: URL} );
+	});
+	
+});
 
 // Mode switch button ------------------------
 document.getElementById("gesturemodebutton").addEventListener("click", function () {

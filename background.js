@@ -348,6 +348,32 @@ chrome.runtime.onMessage.addListener(
 			});
 		});
 	}
+	// ================= download all notes by url ==================
+	else if (request.command == "DownloadAllByUrl") {
+		console.log(request.url);
+		db.transaction(function(tx) {
+			tx.executeSql("SELECT * FROM " + notestable + " WHERE url =?", [request.url], function(tx, result) {
+				var data =[];
+				for (var i = 0; i < result.rows.length; ++i){
+					data[i] = result.rows.item(i);
+				}
+
+				var s = JSON.stringify(data);
+				console.log(s);
+				// send message and selected notes to note.js
+				chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                    chrome.tabs.sendMessage(tabs[0].id, {
+						command:"downloadallbyurl",
+						notesdata:s
+					});
+                });
+			}, function(tx, error) {
+				console.log("load notes error...");
+				alert('Failed to retrieve notes from database - ' + error.message);
+				return;
+			});
+		});
+	}
 	// ================= Search function listener ===================
 	else if (request.command == "Search") {
 		console.log("Search request from popup.");

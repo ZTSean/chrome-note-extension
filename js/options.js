@@ -256,7 +256,13 @@ function save_gc_options () {
     }
 
     // send runtime message to gestureControl.js to apply settings
-	chrome.runtime.sendMessage({command: "ApplyGestureSettings"});
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    	console.log(tabs[0].url);
+                    chrome.tabs.sendMessage(tabs[0].id, {
+						command:"ApplyGestureSettings",
+					});
+                });
+	//chrome.runtime.sendMessage({command: "ApplyGestureSettings"});
 
 	alert("Gesture Settings Saved!");
 }
@@ -267,7 +273,13 @@ function reset_gc_options () {
 	}
 	
 	// send runtime message to gestureControl.js to apply settings
-	chrome.runtime.sendMessage({command: "ApplyGestureSettings"});
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+		console.log(tabs[0].url);
+                    chrome.tabs.sendMessage(tabs[0].id, {
+						command:"ResetGestureSettings",
+					});
+                });
+	//chrome.runtime.sendMessage({command: "ApplyGestureSettings"});
 
 	alert("Reset Gesture Settings!");
 }

@@ -471,6 +471,37 @@ function loadGestureSettings(json){
 // apply css from local storage
 applyCSS();
 
+// Background event listener
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.command == 'downloadallbyurl') {
+
+      if ((typeof request.notesdata) != undefined) {
+        var filename = "";
+        var data = JSON.parse(request.notesdata); 
+        var pdf = new jsPDF();
+        var startX = 20;
+        var startY = 20;
+        
+        for (var i = 0; i < data.length; ++i) {
+          var row = data[i];
+          pdf.text(startX, startY, "Note from note_" + row._id);
+          pdf.text(startX, startY+10, row.note);
+          startY += 20;
+          filename += row.id;
+        }
+
+
+        pdf.save('note_' + filename + ".pdf");
+  
+        //console.log(notesdata);
+      
+      
+    }
+  }
+});
+
+
 // =========================================================================
 // drawing function controlled by mode
 var Line = function(x1,y1,x2,y2){
@@ -492,7 +523,7 @@ strokeListList.push(new Line(15, 15, 15, 15));
     var strokes = JSON.stringify(strokeListList);
     var stroke = {url };
     stroke[url] = strokes;
-    console.log(stroke);
+    //console.log(stroke);
     chrome.storage.local.set(stroke, function () {
       console.log('saved strokes');
     });                      
@@ -501,7 +532,7 @@ strokeListList.push(new Line(15, 15, 15, 15));
 //chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
 //    var url = tabs[0].url;
   chrome.storage.local.get(null, function (result) {
-    console.log(result);
+    //console.log(result);
   });
 //});
 
