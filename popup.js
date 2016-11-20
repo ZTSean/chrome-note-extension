@@ -53,7 +53,50 @@ document.getElementById("search").addEventListener("click", function () {
 	
 });
 
-// Print all notes of current tab button -------	
+// Add open note click listener --------------------------
+var addOpenNoteEvent = function () {
+	$.each($("a[id*='open_note_']"), function (i, e) {
+		// test whether click event has been bound 
+		var ev = $._data(e, 'events');
+		if(ev && ev.click){
+
+		} else {
+			$(e).click(function () {
+				var rawId = e.id;
+				var id = rawId.replace("open_note_", "")
+				console.log(id);
+				chrome.runtime.sendMessage({command: 'OpenNote', id: id});
+			});
+		}
+		
+	});
+}
+document.getElementById("search").addEventListener("click", function () {
+	var keyword = document.getElementById("keyword").value;
+	$('#accordion').addClass('show');
+	$('#accordion').removeClass('hidden');
+	for (var i = 0; i < pages.length; i++) {
+		if (pages[i] != 'accordion') {
+			$('#'+pages[i]).addClass('hidden');
+			$('#'+pages[i]).removeClass('show');
+		}
+	}
+
+	console.log(keyword + " search submitted.");
+	chrome.runtime.sendMessage ( {command: "Search", key:keyword } );
+	
+});
+
+// Delete all notes of current tab button -------	
+document.getElementById("deleteallbyurl").addEventListener("click", function () {
+	chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+	    var URL = tabs[0].url;
+	    chrome.runtime.sendMessage ( {command: "DeleteAllByUrl", url: URL} );
+	});
+	
+});
+
+// Download all notes of current tab button -------	
 document.getElementById("downloadallbyurl").addEventListener("click", function () {
 	chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
 	    var URL = tabs[0].url;
@@ -154,6 +197,8 @@ function loadNotes(notesdata)
 	        var content = document.createElement('div');
 	        content.className = "panel-body";
 	        content.innerHTML = row.note;
+	        content.innerHTML += '<br>' + '<a href="#" id="open_note_' + row.id + '">Open</a>';
+	        addOpenNoteEvent();
 	        notecontent.appendChild(content);
 	        note.appendChild(notecontent);
 

@@ -49,6 +49,7 @@ function Note()
     note.className = 'note-box';
     //note.addEventListener('mousedown', function(e) { return self.onMouseDown(e) }, false);
     note.addEventListener('click', function() { return self.onNoteClick() }, false);
+    note.id = this.id;
     this.note = note;
 
     // toolbar
@@ -500,6 +501,13 @@ chrome.runtime.onMessage.addListener(
     }
   }
 });
+
+function deleteAllNotes () {
+  var elements = document.getElementsByClassName("note-box");
+  while(elements.length > 0){
+        elements[0].parentNode.removeChild(elements[0]);
+    }
+}
 
 
 // =========================================================================

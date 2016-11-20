@@ -347,8 +347,18 @@ chrome.runtime.onMessage.addListener(
 				return;
 			});
 		});
+	} else if (request.command == "OpenNote") {
+		console.log("Open note request from popup");
+		db.transaction(function(tx) {
+			//console.log("execute executeSql");
+			tx.executeSql("SELECT * FROM " + notestable + " WHERE id =?", [request.id], function(tx, result) {
+				for (var i = 0; i < result.rows.length; ++i){
+					chrome.tabs.create({ url:result.rows.item(i).url});
+				}
+			});
+		});
 	}
-	// ================= download all notes by url ==================
+	// ================= download or delete all notes by url ==================
 	else if (request.command == "DownloadAllByUrl") {
 		console.log(request.url);
 		db.transaction(function(tx) {
@@ -366,6 +376,28 @@ chrome.runtime.onMessage.addListener(
 						command:"downloadallbyurl",
 						notesdata:s
 					});
+                });
+			}, function(tx, error) {
+				console.log("load notes error...");
+				alert('Failed to retrieve notes from database - ' + error.message);
+				return;
+			});
+		});
+	} else if (request.command == "DeleteAllByUrl") {
+		console.log(request.url);
+		db.transaction(function(tx) {
+			tx.executeSql("DELETE FROM " + notestable + " WHERE url =?", [request.url], function(tx, result) {
+				var data =[];
+				for (var i = 0; i < result.rows.length; ++i){
+					data[i] = result.rows.item(i).id;
+				}
+
+				var s = JSON.stringify(data);
+				var code = "deleteAllNotes()"
+				// send message and selected notes to note.js
+				chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+					if(!skipUrl(tabs[0].url))
+						chrome.tabs.executeScript(tabs[0].id, {code: code});
                 });
 			}, function(tx, error) {
 				console.log("load notes error...");
