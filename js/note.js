@@ -67,6 +67,28 @@ function Note()
     this.newNoteButton = newNoteButton;
     toolbar.appendChild(newNoteButton);
 
+    // toolbar: copy content
+    var copyButton = document.createElement('a');
+    copyButton.className = "left";
+    var copyIcon = document.createElement('i');
+    copyIcon.className = "fa fa-files-o";
+    copyIcon.setAttribute("aira-hidden", "true");
+    copyButton.appendChild(copyIcon);
+    copyButton.addEventListener('click', function(e) { self.copy(); } );
+    this.copyButton = copyButton;
+    toolbar.appendChild(copyButton);
+
+    // toolbar: clean content
+    var clearButton = document.createElement('a');
+    clearButton.className = "left";
+    var clearIcon = document.createElement('i');
+    clearIcon.className = "fa fa-refresh";
+    clearIcon.setAttribute("aira-hidden", "true");
+    clearButton.appendChild(clearIcon);
+    clearButton.addEventListener('click', function(e) { self.clear(); } );
+    this.clearButton = clearButton;
+    toolbar.appendChild(clearButton);
+
     // toolbar: delete
     var deleteButton = document.createElement('a');
     deleteButton.className = "right";
@@ -75,16 +97,7 @@ function Note()
     this.deleteButton = deleteButton;
     toolbar.appendChild(deleteButton);
 
-    // toolbar: add image
-    var imageButton = document.createElement('a');
-    imageButton.className = "left";
-    var imageIcon = document.createElement('i');
-    imageIcon.className = "fa fa-picture-o";
-    imageIcon.setAttribute("aira-hidden", "true");
-    imageButton.appendChild(imageIcon);
-    imageButton.addEventListener('click', function(e) {  } );
-    this.imageButton = imageButton;
-    toolbar.appendChild(imageButton);
+    
 
     // toolbar: download
     var downloadButton = document.createElement('a');
@@ -198,6 +211,30 @@ Note.prototype = {
         chrome.extension.sendRequest({command:"updateCount",data:notes.length});
 
         document.body.removeChild(this.note);
+    },
+
+    copy: function ()
+    {
+        this.editField.focus();
+        var range = document.createRange(), selection = window.getSelection();
+        selection.removeAllRanges();
+
+        // Make the range select the entire content of the contentHolder paragraph.
+        range.selectNodeContents(this.editField);
+
+        // Add that range to the selection.
+        selection.addRange(range);
+
+        // Copy the selection to clipboard.
+        document.execCommand('copy');
+
+        // Clear selection if you want to.
+        selection.removeAllRanges();
+    },
+
+    clear: function ()
+    {
+        this.editField.innerHTML = "";
     },
 
     download: function ()
