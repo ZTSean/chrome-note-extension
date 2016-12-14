@@ -125,17 +125,38 @@ function reset_note_options () {
 	alert("Reset Note Settings!");
 }
 
-function initNoteSettingPage() {
+function load_note_options () {
+	console.log("load note settings");
+	// add font options to font select
 	var input = $("#font");
 	$.each(font_options,function(fi,font){
-				opt = $('<option>');
-				opt.attr('value',font);
-				opt.text(fi)
-				input.append(opt);
-			});
+		opt = $('<option>');
+		opt.attr('value',font);
+		opt.text(fi);
+		input.append(opt);
+	});
+
+	for(i = 0; i < noteOptions.length; i++) {
+		if(localStorage[noteOptions[i]])
+		{
+			//console.log(noteOptions[i] + " " + localStorage[noteOptions[i]]);
+			$('#'+noteOptions[i]).val(localStorage[noteOptions[i]]);
+			//console.log($('#'+noteOptions[i]).val());
+			if (noteOptions[i].includes('_color')) {
+				$('#' + noteOptions[i]).css('background-color', localStorage[noteOptions[i]]);
+				//console.log($('#' + noteOptions[i]).css('background-color'));
+			}
+		} else {
+			$('#'+noteOptions[i]).val(note_defaults[i]);
+			if (noteOptions[i].includes('_color')) {
+				$('#' + noteOptions[i]).css('background-color', note_defaults[i]);
+			}
+		}
+	}
+
+	
 }
 
-initNoteSettingPage();
 
 $('#note_options_save_button').click(function () { save_note_options(); });
 $('#note_options_reset_button').click(function () { reset_note_options();});
@@ -172,10 +193,10 @@ function load_search_options(){
 			$('#'+searchOptions[i]).val(localStorage[searchOptions[i]]);
 		else
 			$('#'+searchOptions[i]).val(search_defaults[i]);
-		new jscolor.color(searchOptions[i]);
 	}
 	
 }
+
 
 function save_search_options(){
 	console.log("save_search_options.");
@@ -197,7 +218,9 @@ function save_search_options(){
 function reset_search_options(){
 	for(i = 0; i < searchOptions.length; i++) {
 		localStorage[searchOptions[i]] = search_defaults[i];	
+		$('#'+searchOptions[i]).val(search_defaults[i]);
 	}
+
 	
 	// send runtime message to background.js to apply settings
 	chrome.runtime.sendMessage({command: "ApplySearchSettings"});
@@ -220,7 +243,9 @@ var gcOptions = [
     'UPARROW',
     'DOWNARROW',
     'CIRCLE',
-    'TRIANGLE'
+    'TRIANGLE',
+    'RECTANGLE',
+    'STAR'
 ];
 
 // * gesture control default settings (has the same order as gcOptions)
@@ -233,19 +258,31 @@ var gc_defaults = [
     'next_tab',
     'scroll_top',
     'scroll_bottom',
-    'reload_page'
+    'reload_page',
+    'open_new_window',
+    'create_note',
+    'open_new_window'
 ];
 
+// Possible gesture actions
 var gesture_options = {
-    'Close window': 'close_window',
-    'Open new window': 'open_new_window',
-    'Pin tab': 'pin_tab',
+    'Forward page': 'forward',
+    'Back to previous page': 'back',
+    'Open new tab': 'open_new_tab',
     'Close current tab': 'close_tab',
-    'Back to previous tab': 'prev_tab',
+    'Open new window': 'open_new_window',
+    'Close window': 'close_window',
+    'Pin tab': 'pin_tab',
     'Go to next tab': 'next_tab',
-    'Scroll up to the page top': 'scroll_top',
-    'Scroll down to the page bottom': 'scroll_bottom',
+    'Back to previous tab': 'prev_tab',
+    'Scroll up to the top': 'scroll_top',
+    'Scroll down to the bottom': 'scroll_bottom',
     'Reload current page': 'reload_page',
+    'Create new note on current page': 'create_note',
+    'Hide all notes on current page': 'hide_notes',
+    'Show all notes on current page': 'show_notes',
+    "Delete all notes on current page": 'delete_notes',
+    "Download all note on current page": 'download_notes'
 }
 
 function save_gc_options () {
@@ -253,64 +290,56 @@ function save_gc_options () {
         localStorage[gcOptions[i]] = $('#gc_' + gcOptions[i]).val();
     }
 
-    // send runtime message to gestureControl.js to apply settings
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    	console.log(tabs[0].url);
-                    chrome.tabs.sendMessage(tabs[0].id, {
-						command:"ApplyGestureSettings",
-					});
-                });
-	//chrome.runtime.sendMessage({command: "ApplyGestureSettings"});
-
 	alert("Gesture Settings Saved!");
 }
 
 function reset_gc_options () {
-    for(i = 0; i < gcOptions.length; i++) {
-		localStorage[gcOptions[i]] = gc_defaults[i];	
+    for(var i = 0; i < gcOptions.length; i++) {
+		localStorage[gcOptions[i]] = gc_defaults[i];
+		$('#gc_'+gcOptions[i]).val(gc_defaults[i]);
+
 	}
-	
-	// send runtime message to gestureControl.js to apply settings
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-		console.log(tabs[0].url);
-                    chrome.tabs.sendMessage(tabs[0].id, {
-						command:"ResetGestureSettings",
-					});
-                });
-	//chrome.runtime.sendMessage({command: "ApplyGestureSettings"});
 
 	alert("Reset Gesture Settings!");
 }
 
-function initControlSettingPage() {
-    // Add options to each select element
+
+function load_gesture_options() {
+	// Add options to each select element
     var inputArray = $('#gesture_control_page select');
-    var i = 0;
     $.each(inputArray, function(index, input) {
-    	var j = 0;
+    	//var s = (input.id).replace("gc_", "");
+    	//var i = gcOptions.indexOf(s);
         $.each(gesture_options,function(actionName,action){
                 opt = $('<option>');
                 opt.attr('value',action);
                 opt.text(actionName);
-                if (i == j) opt.attr("selected", "selected");
-                // set showing value is default value when init
-    			// order of select array in html has to be consistent with defaults array
+                //if (gc_defaults[i] == action) opt.attr("selected", "selected");
                 $(input).append(opt);
-                j++;
             });    
-
-        i++;
     });
-    
+
+    // determine whehter user customized
+	for(var i = 0; i < gcOptions.length; i++) {
+		if(localStorage[gcOptions[i]])
+		{
+			// set to user customized value
+			$('#gc_'+gcOptions[i]).val(localStorage[gcOptions[i]]);
+		} else {
+			// set to default
+			$('#gc'+gcOptions[i]).val(gc_defaults[i]);
+		}
+	}
 }
 
-initControlSettingPage();
+// called whenever pages is loaded
 
 $('#gesture_options_save_button').click(function () { save_gc_options(); });
 $('#gesture_options_reset_button').click(function () { reset_gc_options(); });
 
-
-
+load_gesture_options();
+load_search_options();
+load_note_options();
 
 
 

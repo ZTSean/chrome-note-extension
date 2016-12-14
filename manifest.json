@@ -1,12 +1,10 @@
 {
   "manifest_version": 2,
-
   "name": "UI Project",
   "description": "Web annotation and mouse gesture control",
   "version": "1.0",
 
   "browser_action": {
-    "default_icon": "icon.png",
     "default_popup": "popup.html",
     "default_title": "WebAnn"
   },
@@ -15,14 +13,12 @@
     {
       "matches": ["http://*/*", "https://*/*", "\u003Call_urls>"],
       "css": [ "css/font-awesome.min.css","css/note.css"],
-      "js": ["js/jspdf.js", "js/note.js", "js/FileSaver.min.js", "js/gl-matrix.js", "js/gestureControl.js"],
+      "js": ["js/jspdf.js", "js/note.js", "js/FileSaver.min.js", "js/gl-matrix.js", "js/gestureControl.js", "js/jquery-3.1.1.min.js"],
       "run_at" : "document_end"
     }
     
   ],
-
   "options_page": "options.html",
-
   "background": {
     "scripts" : ["background.js", "js/fuse.min.js"]
   },

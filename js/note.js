@@ -78,7 +78,18 @@ function Note()
     this.copyButton = copyButton;
     toolbar.appendChild(copyButton);
 
-    // toolbar: clean content
+    // toolbar: cut content
+    var cutButton = document.createElement('a');
+    cutButton.className = "left";
+    var cutIcon = document.createElement('i');
+    cutIcon.className = "fa fa-scissors";
+    cutIcon.setAttribute("aira-hidden", "true");
+    cutButton.appendChild(cutIcon);
+    cutButton.addEventListener('click', function(e) { self.cut(); } );
+    this.cutButton = cutButton;
+    toolbar.appendChild(cutButton);
+
+    // toolbar: clear content
     var clearButton = document.createElement('a');
     clearButton.className = "left";
     var clearIcon = document.createElement('i');
@@ -96,8 +107,6 @@ function Note()
     deleteButton.addEventListener('click', function(e) {return self.close(e)}, false);
     this.deleteButton = deleteButton;
     toolbar.appendChild(deleteButton);
-
-    
 
     // toolbar: download
     var downloadButton = document.createElement('a');
@@ -235,6 +244,11 @@ Note.prototype = {
     clear: function ()
     {
         this.editField.innerHTML = "";
+    },
+
+    cut: function () {
+        this.copy();
+        this.clear();
     },
 
     download: function ()
@@ -499,12 +513,6 @@ function loadDrawingSettings(json){
    applySearchSettings(localstorage);
 }
 
-// load gesture control settings
-function loadGestureSettings(json){
-   localstorage = eval(json);
-   applyGestureSettings(localstorage);
-}
-
 // =========================================================================
 // apply css from local storage
 applyCSS();
@@ -513,7 +521,7 @@ applyCSS();
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.command == 'downloadallbyurl') {
-
+        window.print();
       if ((typeof request.notesdata) != undefined) {
         var filename = "";
         var data = JSON.parse(request.notesdata); 
@@ -546,6 +554,25 @@ function deleteAllNotes () {
     }
 }
 
+function hideAllNotes () {
+  var elements = document.getElementsByClassName("note-box");
+  for (i = 0; i< elements.length; i++) {
+
+    elements[i].className += " hidden"
+    $(elements[i]).removeClass("show"); 
+ //console.log(e.className);
+  }
+}
+
+
+function showAllNotes () {
+  var elements = document.getElementsByClassName("note-box");
+  for (i = 0; i <elements.length; i++){
+    elements[i].className += " show"
+    $(elements[i]).removeClass("hidden"); 
+  //console.log(e.className);
+  }
+}
 
 // =========================================================================
 // drawing function controlled by mode

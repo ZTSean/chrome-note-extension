@@ -96,6 +96,24 @@ document.getElementById("deleteallbyurl").addEventListener("click", function () 
 	
 });
 
+// Delete all notes of current tab button -------	
+document.getElementById("showallbyurl").addEventListener("click", function () {
+	chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+	    var URL = tabs[0].url;
+	    chrome.runtime.sendMessage ( {command: "ShowAllByUrl", url: URL} );
+	});
+	
+});
+
+// Delete all notes of current tab button -------	
+document.getElementById("hideallbyurl").addEventListener("click", function () {
+	chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+	    var URL = tabs[0].url;
+	    chrome.runtime.sendMessage ( {command: "HideAllByUrl", url: URL} );
+	});
+	
+});
+
 // Download all notes of current tab button -------	
 document.getElementById("downloadallbyurl").addEventListener("click", function () {
 	chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
@@ -109,16 +127,32 @@ document.getElementById("downloadallbyurl").addEventListener("click", function (
 document.getElementById("gesturemodebutton").addEventListener("click", function () {
 	// get true or false value of radio button
 	var isSelected = $(this).prop('checked');
-	
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {gestureMode: isSelected});
+    });
 	// TODO: background 
 });
 
 document.getElementById("drawingmodebutton").addEventListener("click", function () {
 	// get true or false value of radio button
 	var isSelected = $(this).prop('checked');
-	
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {drawingMode: isSelected});
+    });
 	// TODO: background 
-});  	
+});  
+document.getElementById("clear_annotation").addEventListener("click", function () {
+	// get true or false value of radio button
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, {clearAllAnnotation: "clear"});
+    });
+	// TODO: background 
+});  
+
+// open option page button
+document.getElementById("settings").addEventListener("click", function () {
+	chrome.runtime.openOptionsPage();
+});
 
 // ====== Message receiver ======
 chrome.runtime.onMessage.addListener(

@@ -6,6 +6,7 @@ var searchSettings = { threshold: 0.2, keys: ["note"] };
 
 // data base table name
 var notestable = "WebNotes";
+var strokestable = "WebDrawings";
 
 try {
 	if (window.openDatabase) {
@@ -19,6 +20,11 @@ try {
 			 	// Create table if not exist: 
 				tx.executeSql('CREATE TABLE IF NOT EXISTS ' + notestable +  
 					'(id REAL UNIQUE, note TEXT, left TEXT, top TEXT, zindex REAL, url TEXT)', 
+				  []);
+
+				// create stroke table
+				tx.executeSql('CREATE TABLE IF NOT EXISTS ' + strokestable +  
+					'(annotations TEXT, url TEXT UNIQUE)', 
 				  []);
 			  });
 		}
@@ -71,7 +77,10 @@ chrome.tabs.onCreated.addListener(function(tab) {
 	if(!skipUrl(tab.url)){
 		loadCSS();
 		loadNotes();
+		
 	}
+	loadAnnotations();
+	loadGestureSettings();
 	updateCount(tab);
 });
 
@@ -81,6 +90,8 @@ chrome.tabs.onUpdated.addListener(function(tabId,changeInfo,tab) {
 		loadCSS();
 		loadNotes();
 	}
+	loadAnnotations();
+	loadGestureSettings();
 	updateCount(tab);
 });
 
@@ -118,6 +129,26 @@ var loadNotes = function(){
 					data[i] = result.rows.item(i);
 				}
 				code = 'loadNotes('+JSON.stringify(data)+')';
+				chrome.tabs.executeScript(tab.id, {code: code});
+			}, function(tx, error) {
+				console.log("load notes error...");
+				alert('Failed to retrieve notes from database - ' + error.message);
+				return;
+			});
+		});
+	});
+}
+
+// Load stroke annotations for current tab
+var loadAnnotations = function () {
+	chrome.tabs.getSelected(null, function(tab) {
+		db.transaction(function(tx) {
+			tx.executeSql("SELECT * FROM " + strokestable + " WHERE url = ?", [tab.url], function(tx, result) {
+				var data =[];
+				for (var i = 0; i < result.rows.length; ++i){
+					data[i] = result.rows.item(i);
+				}
+				code = 'loadAnno('+JSON.stringify(data)+')';
 				chrome.tabs.executeScript(tab.id, {code: code});
 			}, function(tx, error) {
 				console.log("load notes error...");
@@ -309,13 +340,23 @@ chrome.extension.onMessage.addListener(
                     chrome.tabs.update({pinned: true});
                 });
         }
-        else if(request.msg == "add_bookmark"){
-            chrome.tabs.getSelected(null, 
-                function(tab) {
-                    chrome.bookmarks.create({title: tab.title, url: tab.url});
-                });
+        // ========================= Drawing Events=========================
+        else if (request.command == "saveNewAnno") {
+        	// Database query
+			db.transaction(function(tx) {
+				//console.log("execute executeSql");
+				tx.executeSql("INSERT INTO " + strokestable + " (annotations, url) VALUES (?, ?)", [request.data, request.url]);
+			});
         }
-        // ===============================================================
+        else if(request.command == 'saveAnno'){
+			db.transaction(function (tx){
+				tx.executeSql("UPDATE " + strokestable + " SET annotations = ? WHERE url = ?", [request.data, request.url]);
+			});
+		}else if(request.command == 'clearAnno'){
+			db.transaction(function(tx) {
+				tx.executeSql("DELETE FROM " + strokestable + " WHERE url = ?", [request.url]);
+			});
+		}
 	}
 );
 
@@ -400,8 +441,7 @@ chrome.runtime.onMessage.addListener(
 				}
 
 				var s = JSON.stringify(data);
-				var code = "deleteAllNotes()"
-				// send message and selected notes to note.js
+				var code = "deleteAllNotes()";
 				chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 					if(!skipUrl(tabs[0].url))
 						chrome.tabs.executeScript(tabs[0].id, {code: code});
@@ -412,6 +452,18 @@ chrome.runtime.onMessage.addListener(
 				return;
 			});
 		});
+	} else if (request.command == "ShowAllByUrl") {
+		var code = "showAllNotes()";
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+			if(!skipUrl(tabs[0].url))
+				chrome.tabs.executeScript(tabs[0].id, {code: code});
+        });
+	} else if (request.command == "HideAllByUrl") {
+		var code = "hideAllNotes()";
+		chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+			if(!skipUrl(tabs[0].url))
+				chrome.tabs.executeScript(tabs[0].id, {code: code});
+        });
 	}
 	// ================= Search function listener ===================
 	else if (request.command == "Search") {
@@ -479,5 +531,28 @@ chrome.runtime.onMessage.addListener(
 		console.log("Start apply settings:");
 		loadSearchSettings();
 		console.log(searchSettings);
-	}
+	} if (request.command == 'ApplyGestureSettings') {
+        for (var i = 0; i < gcOptions.length; i++) {
+            if (localStorage[gcOptions[i]] != undefined) {
+                // load settings from local storage
+                console.log("set " + gcOptions[i]);
+                gestureControl[gcOptions[i]] = localStorage[gcOptions[i]];
+            }
+        }
+        console.log("gesture control settins loaded.");
+    } else if (request.command == 'ResetGestureSettings') {
+        //chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        //    console.log(tabs[0].url);
+
+            for (var i = 0; i < gcOptions.length; i++) {
+                if (localStorage[gcOptions[i]] != undefined) {
+                    // load settings from local storage
+
+                    gestureControl[gcOptions[i]] = gc_defaults[i];
+                }
+            }
+        //});
+        
+        console.log("gesture control settins reset.");
+    }
 });
